@@ -51,110 +51,100 @@ class _StartState extends State<Start> {
         decoration: const BoxDecoration(
           image: DecorationImage(image: AssetImage('assets/bild3.jpg'), fit: BoxFit.cover),
         ),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: InputDecoration(
-                            labelText: 'Produkte hinzufügen',
-                            border: OutlineInputBorder(),
-                            filled: true,
-                            fillColor: Colors.white70,
-                          ),
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (value) {
-                            setState(() {
-                              hinzufuegentest(einkaufsliste, controller);
-                            });
-                            focusNode.requestFocus();
-                          },
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: InputDecoration(
+                          labelText: 'Produkte hinzufügen',
+                          border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Colors.white70,
                         ),
-                      ),
-                      const SizedBox(width: 10),
-
-                      ElevatedButton(
-                        onPressed: () {
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (value) {
                           setState(() {
                             hinzufuegentest(einkaufsliste, controller);
                           });
+                          focusNode.requestFocus();
                         },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
-                            if (states.contains(WidgetState.hovered)) {
-                              return const Color.fromARGB(255, 90, 140, 90); // heller bei Hover
-                            }
-                            return const Color.fromARGB(255, 73, 117, 75); // normal
-                          }),
-                          elevation: WidgetStateProperty.resolveWith<double>((states) {
-                            if (states.contains(WidgetState.hovered)) {
-                              return 8;
-                            }
-                            return 4;
-                          }),
-                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                          ),
-                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
-                          shadowColor: WidgetStateProperty.all(Colors.black45),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.add, color: Colors.white), SizedBox(width: 8)],
-                        ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  ...einkaufsliste.map((item) {
-                    return Material(
-                      color: Colors.transparent,
-                      child: Container(
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.white70),
-                        margin: const EdgeInsets.symmetric(vertical: 5),
-                        child: ListTile(
-                          title: Text(item.bezeichnung),
-
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Checkbox(
-                                value: item.checked,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    item.checked = value ?? false;
-                                    saveEinkaufsliste(einkaufsliste);
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  setState(() {
-                                    einkaufsliste.remove(item);
-                                    saveEinkaufsliste(einkaufsliste);
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          hinzufuegentest(einkaufsliste, controller);
+                        });
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all(Color.fromARGB(255, 73, 117, 75)),
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
                       ),
-                    );
-                  }),
-                ],
+                      child: const Icon(Icons.add, color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+
+              // Die Liste bekommt den Restplatz und zeigt ggf. nichts
+              Expanded(
+                child:
+                    einkaufsliste.isEmpty
+                        ? const Center(
+                          child: Text(
+                            "Keine Produkte in der Liste.",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                        )
+                        : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: einkaufsliste.length,
+                          itemBuilder: (context, index) {
+                            final item = einkaufsliste[index];
+                            return Container(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.white70),
+                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              child: ListTile(
+                                title: Text(item.bezeichnung),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Checkbox(
+                                      value: item.checked,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          item.checked = value ?? false;
+                                          saveEinkaufsliste(einkaufsliste);
+                                        });
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () {
+                                        setState(() {
+                                          einkaufsliste.removeAt(index);
+                                          saveEinkaufsliste(einkaufsliste);
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+              ),
+            ],
+          ),
         ),
       ),
     );
