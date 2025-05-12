@@ -1,40 +1,17 @@
-import 'logik.dart';
-import "package:shared_preferences/shared_preferences.dart";
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:toooodoooliste/providers.dart';
 import 'package:flutter/material.dart';
-import 'item.dart';
 
-class Start extends StatefulWidget {
-  const Start({super.key});
+class Start extends ConsumerWidget {
+  Start({super.key});
 
-  @override
-  State<Start> createState() => _StartState();
-}
-
-class _StartState extends State<Start> {
-  List<Item> einkaufsliste = [];
   final FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    setState(() {
-      ladeUndSetzeEinkaufsliste();
-    });
-  }
-
-  void ladeUndSetzeEinkaufsliste() async {
-    final prefs = await SharedPreferences.getInstance();
-    final gespeicherteListe = prefs.getStringList('einkaufsliste') ?? [];
-    final transformierteListe = gespeicherteListe.map((item) => Item.fromSaveString(item)).toList();
-
-    setState(() {
-      einkaufsliste = transformierteListe;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final einkaufsliste = ref.watch(refEinkaufsliste);
+    final einkaufslisteNotifier = ref.watch(refEinkaufsliste.notifier);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 73, 117, 75),
@@ -70,9 +47,8 @@ class _StartState extends State<Start> {
                         ),
                         textInputAction: TextInputAction.done,
                         onSubmitted: (value) {
-                          setState(() {
-                            hinzufuegentest(einkaufsliste, controller);
-                          });
+                          einkaufslisteNotifier.addItemWithBezeichnung(controller.text);
+                          controller.clear();
                           focusNode.requestFocus();
                         },
                       ),
@@ -80,9 +56,9 @@ class _StartState extends State<Start> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          hinzufuegentest(einkaufsliste, controller);
-                        });
+                        einkaufslisteNotifier.addItemWithBezeichnung(controller.text);
+                        controller.clear();
+                        focusNode.requestFocus();
                       },
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(Color.fromARGB(255, 73, 117, 75)),
@@ -121,19 +97,13 @@ class _StartState extends State<Start> {
                                     Checkbox(
                                       value: item.checked,
                                       onChanged: (bool? value) {
-                                        setState(() {
-                                          item.checked = value ?? false;
-                                          saveEinkaufsliste(einkaufsliste);
-                                        });
+                                        einkaufslisteNotifier.updateItemChecked(item, value ?? false);
                                       },
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete),
                                       onPressed: () {
-                                        setState(() {
-                                          einkaufsliste.removeAt(index);
-                                          saveEinkaufsliste(einkaufsliste);
-                                        });
+                                        einkaufslisteNotifier.removeItem(item);
                                       },
                                     ),
                                   ],
